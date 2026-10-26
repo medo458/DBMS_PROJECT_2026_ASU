@@ -140,7 +140,6 @@ erDiagram
 ### Constraints
 
 - **Primary keys**: every table has an auto-generated `id` junction tables use composite keys
-- **Enums**: `role`, loan `status`, and reservation `status` are implemented as PostgreSQL `ENUM` types
 - **Foreign keys**: `ON DELETE CASCADE` or `RESTRICT` depending on business rules
 - **Unique**: `users.email`, `books.isbn`, `categories.name`
 - **Checks**:
