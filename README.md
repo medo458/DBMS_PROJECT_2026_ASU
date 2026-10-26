@@ -129,13 +129,24 @@ erDiagram
 | `users` | Members, librarians, and admins (`role`: member / librarian / admin) |
 | `books` | Catalog entries (title, ISBN, publisher, pages, copy counts) |
 | `copies` | Individual physical copies of a book (language, price, taxes, status) |
-| `authors` | Author details and biography[ |
+| `authors` | Author details and biography |
 | `categories` | Genres / categories |
 | `book_authors` | Junction table: books ↔ authors (M:N) |
 | `book_categories` | Junction table: books ↔ categories (M:N) |
 | `loans` | Borrowing transactions (`status`: borrowed / returned / overdue)|
 | `reservations` | Book reservations (`status`: active / cancelled / fulfilled) |
 | `publisher` | Publisher details and address |
+
+### Relationships
+
+- **USERS to LOANS (1:N)**: A user can borrow multiple books over time, but each loan record belongs to exactly one user.
+- **USERS to RESERVATIONS (1:N)**: A user can make multiple reservations, but each reservation belongs to one user.
+- **PUBLISHER to BOOKS (1:N)**: A publisher can publish multiple books, while each book is associated with one publisher.
+- **BOOKS to COPIES (1:N)**: A book title in the catalog can have multiple physical inventory copies.
+- **BOOKS to LOANS (1:N)**: A book can be borrowed multiple times across different loan transactions.
+- **BOOKS to RESERVATIONS (1:N)**: A book can be placed on hold through multiple reservations.
+- **BOOKS to AUTHORS (M:N via BOOK_AUTHORS)**: A book can be written by multiple authors, and an author can write multiple books[cite: 3].
+- **BOOKS to CATEGORIES (M:N via BOOK_CATEGORIES)**: A book can belong to multiple categories/genres, and a category contains multiple books.
 
 ### Constraints
 
