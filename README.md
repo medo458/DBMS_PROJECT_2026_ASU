@@ -145,7 +145,7 @@ erDiagram
 - **BOOKS to COPIES (1:N)**: A book title in the catalog can have multiple physical inventory copies.
 - **BOOKS to LOANS (1:N)**: A book can be borrowed multiple times across different loan transactions.
 - **BOOKS to RESERVATIONS (1:N)**: A book can be placed on hold through multiple reservations.
-- **BOOKS to AUTHORS (M:N via BOOK_AUTHORS)**: A book can be written by multiple authors, and an author can write multiple books[cite: 3].
+- **BOOKS to AUTHORS (M:N via BOOK_AUTHORS)**: A book can be written by multiple authors, and an author can write multiple books.
 - **BOOKS to CATEGORIES (M:N via BOOK_CATEGORIES)**: A book can belong to multiple categories/genres, and a category contains multiple books.
 
 ### Constraints
