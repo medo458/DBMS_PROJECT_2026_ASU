@@ -7,9 +7,9 @@
 - **Subscriptions**: track subscription start and end dates per user
 - **Book catalog**: ISBN, publisher, description, page count, authors, and categories
 - **Physical copies**: per-copy language, rental price, taxes, and status
-- **Loans**: borrow/return tracking with due dates and automatic fine calculation
+- **Loans**: borrow/return tracking with due dates
 - **Reservations**: reserve books that are currently unavailable
-- **Data integrity**: foreign keys, unique and check constraints, triggers, and indexes on key columns
+- **Data integrity**: foreign keys, unique and check constraints, and indexes on key columns
 
 
 
@@ -22,7 +22,7 @@ erDiagram
     USERS ||--o{ LOANS : "borrows"
     USERS ||--o{ RESERVATIONS : "reserves"
     PUBLISHER ||--o{ BOOKS : "publishes"
-    BOOKS ||--o{ LOANS : "is_borrowed"
+    COPIES ||--o{ LOANS : "is_borrowed"
     BOOKS ||--o{ RESERVATIONS : "is_reserved"
     BOOKS ||--o{ COPIES : "has"
     BOOKS ||--o{ BOOK_AUTHORS : "written_by"
@@ -36,11 +36,11 @@ erDiagram
         varchar last_name
         date subscription_start
         date subscription_end
-        int age
+        date date_of_birth
         varchar email UK
         varchar password_hash
         enum role
-        timestamp created_at
+        timestamptz created_at
     }
 
     BOOKS {
@@ -51,16 +51,15 @@ erDiagram
         int publisher_id FK
         int publication_year
         int pages
-        timestamp created_at
+        timestamptz created_at
     }
 
     COPIES {
         int id PK
         int book_id FK
         varchar language
-        decimal rental_price
-        decimal taxes
-        varchar status
+        numeric(8,2) rental_price
+        numeric(8,2) taxes
     }
 
     AUTHORS {
@@ -93,20 +92,20 @@ erDiagram
         date borrow_date
         date due_date
         date return_date
-        decimal fine_amount
-        decimal rental_price
-        decimal subscription_price
+        numeric(8,2) fine_amount
+        numeric(8,2) rental_price
+        numeric(8,2) subscription_price
         enum status
-        timestamp created_at
+        timestamptz created_at
     }
 
     RESERVATIONS {
         UUID id PK
         UUID user_id FK
         int book_id FK
-        timestamp reserved_at
+        timestamptz reserved_at
         enum status
-        timestamp created_at
+        timestamptz created_at
     }
 
     PUBLISHER {
@@ -125,9 +124,9 @@ erDiagram
 | Table | Purpose |
 |-------|---------|
 | `users` | Members, librarians, and admins (`role`: member / librarian / admin) |
-| `books` | Catalog entries (title, ISBN, publisher, pages, copy counts) |
+| `books` | Catalog entries (title, ISBN, publisher, pages) |
 | `copies` | Individual physical copies of a book (language, price, taxes, status) |
-| `authors` | Author details and biography[ |
+| `authors` | Author details and biography |
 | `categories` | Genres / categories |
 | `book_authors` | Junction table: books ↔ authors (M:N) |
 | `book_categories` | Junction table: books ↔ categories (M:N) |
@@ -137,11 +136,10 @@ erDiagram
 
 ### Constraints
 
-- **Primary keys**: every table has an auto-generated `id` junction tables use composite keys
+- **Primary keys**: users, loans and reservations use UUIDs; all other tables use auto-generated integer identity columns. Junction tables use composite keys.
 - **Foreign keys**: `ON DELETE CASCADE` or `RESTRICT` depending on business rules
 - **Unique**: `users.email`, `books.isbn`, `categories.name`
 - **Checks**:
-  - `books.available_copies >= 0 AND books.available_copies <= books.total_copies`
   - `loans.due_date >= loans.borrow_date`
   - `loans.fine_amount >= 0 AND loans.rental_price >= 0 AND loans.subscription_price >= 0`
   - `users.subscription_end >= users.subscription_start`
@@ -151,7 +149,6 @@ erDiagram
 ```sql
 -- Search
 CREATE INDEX idx_books_title ON books(title);
-CREATE INDEX idx_books_isbn ON books(isbn);
 CREATE INDEX idx_authors_name ON authors(last_name, first_name);
 CREATE INDEX idx_publisher_name ON publisher(name);
 
@@ -160,7 +157,7 @@ CREATE INDEX idx_copies_book_id ON copies(book_id);
 CREATE INDEX idx_book_authors_author_id ON book_authors(author_id);
 CREATE INDEX idx_book_categories_category_id ON book_categories(category_id);
 CREATE INDEX idx_loans_user_id ON loans(user_id);
-CREATE INDEX idx_loans_book_id ON loans(book_id);
+CREATE INDEX idx_loans_copy_id ON loans(copy_id);
 CREATE INDEX idx_reservations_user_id ON reservations(user_id);
 CREATE INDEX idx_reservations_book_id ON reservations(book_id);
 
