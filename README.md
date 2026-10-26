@@ -6,7 +6,7 @@
 - **User management**: members, librarians, and admins with role-based access
 - **Subscriptions**: track subscription start and end dates per user
 - **Book catalog**: ISBN, publisher, description, page count, authors, and categories
-- **Physical copies**: per-copy language, rental price, taxes, and status[cite: 3]
+- **Physical copies**: per-copy language, rental price, taxes, and status
 - **Loans**: borrow/return tracking with due dates and automatic fine calculation
 - **Reservations**: reserve books that are currently unavailable
 - **Data integrity**: foreign keys, unique and check constraints, triggers, and indexes on key columns
@@ -126,27 +126,27 @@ erDiagram
 
 | Table | Purpose |
 |-------|---------|
-| `users` | Members, librarians, and admins (`role`: member / librarian / admin)[cite: 3] |
-| `books` | Catalog entries (title, ISBN, publisher, pages, copy counts)[cite: 3] |
-| `copies` | Individual physical copies of a book (language, price, taxes, status)[cite: 3] |
-| `authors` | Author details and biography[cite: 3] |
-| `categories` | Genres / categories[cite: 3] |
-| `book_authors` | Junction table: books ↔ authors (M:N)[cite: 3] |
-| `book_categories` | Junction table: books ↔ categories (M:N)[cite: 3] |
-| `loans` | Borrowing transactions (`status`: borrowed / returned / overdue)[cite: 3] |
-| `reservations` | Book reservations (`status`: active / cancelled / fulfilled)[cite: 3] |
+| `users` | Members, librarians, and admins (`role`: member / librarian / admin) |
+| `books` | Catalog entries (title, ISBN, publisher, pages, copy counts) |
+| `copies` | Individual physical copies of a book (language, price, taxes, status) |
+| `authors` | Author details and biography[ |
+| `categories` | Genres / categories |
+| `book_authors` | Junction table: books ↔ authors (M:N) |
+| `book_categories` | Junction table: books ↔ categories (M:N) |
+| `loans` | Borrowing transactions (`status`: borrowed / returned / overdue)|
+| `reservations` | Book reservations (`status`: active / cancelled / fulfilled) |
 | `publisher` | Publisher details and address[cite: 3] |
 
 ### Constraints
 
-- **Primary keys**: every table has an auto-generated `id`; junction tables use composite keys[cite: 3]
-- **Enums**: `role`, loan `status`, and reservation `status` are implemented as PostgreSQL `ENUM` types[cite: 3]
-- **Foreign keys**: `ON DELETE CASCADE` or `RESTRICT` depending on business rules[cite: 3]
-- **Unique**: `users.email`, `books.isbn`, `categories.name`[cite: 3]
+- **Primary keys**: every table has an auto-generated `id` junction tables use composite keys
+- **Enums**: `role`, loan `status`, and reservation `status` are implemented as PostgreSQL `ENUM` types
+- **Foreign keys**: `ON DELETE CASCADE` or `RESTRICT` depending on business rules
+- **Unique**: `users.email`, `books.isbn`, `categories.name`
 - **Checks**:
-  - `books.available_copies >= 0 AND books.available_copies <= books.total_copies`[cite: 3]
-  - `loans.due_date >= loans.borrow_date`[cite: 3]
-  - `loans.fine_amount >= 0 AND loans.rental_price >= 0 AND loans.subscription_price >= 0`[cite: 3]
+  - `books.available_copies >= 0 AND books.available_copies <= books.total_copies`
+  - `loans.due_date >= loans.borrow_date`
+  - `loans.fine_amount >= 0 AND loans.rental_price >= 0 AND loans.subscription_price >= 0`
   - `users.subscription_end >= users.subscription_start`
 
 ### Indexes
@@ -181,5 +181,5 @@ CREATE INDEX idx_reservations_status ON reservations(status);
 The schema follows **Third Normal Form (3NF)**: atomic attributes (1NF),
 no partial dependencies (2NF),
 no transitive dependencies (3NF),
-and junction tables to resolve many-to-many relationships.[cite: 3]
+and junction tables to resolve many-to-many relationships.
 
