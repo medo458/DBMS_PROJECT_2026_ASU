@@ -135,7 +135,7 @@ erDiagram
 | `book_categories` | Junction table: books ↔ categories (M:N) |
 | `loans` | Borrowing transactions (`status`: borrowed / returned / overdue)|
 | `reservations` | Book reservations (`status`: active / cancelled / fulfilled) |
-| `publisher` | Publisher details and address[cite: 3] |
+| `publisher` | Publisher details and address |
 
 ### Constraints
 
