@@ -60,6 +60,7 @@ erDiagram
         varchar language
         numeric(8,2) rental_price
         numeric(8,2) taxes
+        enum status
     }
 
     AUTHORS {
@@ -124,7 +125,7 @@ erDiagram
 | Table | Purpose |
 |-------|---------|
 | `users` | Members, librarians, and admins (`role`: member / librarian / admin) |
-| `books` | Catalog entries (title, ISBN, publisher, pages) |
+| `books` | Catalog entries (title, ISBN, publisher, pages, `status`: active / damaged / lost / retired) |
 | `copies` | Individual physical copies of a book (language, price, taxes, status) |
 | `authors` | Author details and biography |
 | `categories` | Genres / categories |
