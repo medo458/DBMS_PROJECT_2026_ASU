@@ -31,7 +31,7 @@ erDiagram
     CATEGORIES ||--o{ BOOK_CATEGORIES : "contains"
 
     USERS {
-        int id PK
+        UUID id PK
         varchar first_name
         varchar last_name
         date subscription_start
@@ -48,10 +48,8 @@ erDiagram
         varchar isbn UK
         varchar title
         text description
-        varchar publisher
+        int publisher_id FK
         int publication_year
-        int total_copies
-        int available_copies
         int pages
         timestamp created_at
     }
@@ -89,9 +87,9 @@ erDiagram
     }
 
     LOANS {
-        int id PK
-        int user_id FK
-        int book_id FK
+        UUID id PK
+        UUID user_id FK
+        int copy_id FK
         date borrow_date
         date due_date
         date return_date
@@ -103,8 +101,8 @@ erDiagram
     }
 
     RESERVATIONS {
-        int id PK
-        int user_id FK
+        UUID id PK
+        UUID user_id FK
         int book_id FK
         timestamp reserved_at
         enum status
