@@ -63,23 +63,23 @@ CREATE TABLE copies (
     rental_price NUMERIC(8,2) NOT NULL DEFAULT 0,
     taxes NUMERIC(8,2) NOT NULL DEFAULT 0,
     status copy_status NOT NULL DEFAULT 'available',
-    CONSTRAINT fk_copies_book FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE
+    CONSTRAINT fk_copies_book FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE SET NULL
 );
 
 CREATE TABLE book_authors (
     book_id INT NOT NULL,
     author_id INT NOT NULL,
     PRIMARY KEY (book_id, author_id),
-    CONSTRAINT fk_ba_book FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
-    CONSTRAINT fk_ba_author FOREIGN KEY (author_id) REFERENCES authors(id) ON DELETE CASCADE
+    CONSTRAINT fk_ba_book FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE SET NULL,
+    CONSTRAINT fk_ba_author FOREIGN KEY (author_id) REFERENCES authors(id) ON DELETE SET NULL
 );
 
 CREATE TABLE book_categories (
     book_id INT NOT NULL,
     category_id INT NOT NULL,
     PRIMARY KEY (book_id, category_id),
-    CONSTRAINT fk_bc_book FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
-    CONSTRAINT fk_bc_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+    CONSTRAINT fk_bc_book FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE SET NULL,
+    CONSTRAINT fk_bc_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
 );
 
 CREATE TABLE loans (
@@ -109,6 +109,6 @@ CREATE TABLE reservations (
     reserved_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     status reservation_status NOT NULL DEFAULT 'active',
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_reservations_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_reservations_book FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE
+    CONSTRAINT fk_reservations_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT fk_reservations_book FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE SET NULL
 );
