@@ -89,6 +89,7 @@ erDiagram
     LOANS {
         UUID id PK
         UUID user_id FK
+        enum type
         int copy_id FK
         date borrow_date
         date due_date
@@ -134,6 +135,17 @@ erDiagram
 | `loans` | Borrowing transactions (`status`: borrowed / returned / overdue)|
 | `reservations` | Book reservations (`status`: active / cancelled / fulfilled) |
 | `publisher` | Publisher details and address |
+
+### Relationships
+
+- **USERS to LOANS (1:N)**: A user can borrow multiple books over time, but each loan record belongs to exactly one user.
+- **USERS to RESERVATIONS (1:N)**: A user can make multiple reservations, but each reservation belongs to one user.
+- **PUBLISHER to BOOKS (1:N)**: A publisher can publish multiple books, while each book is associated with one publisher.
+- **BOOKS to COPIES (1:N)**: A book title in the catalog can have multiple physical inventory copies.
+- **BOOKS to LOANS (1:N)**: A book can be borrowed multiple times across different loan transactions.
+- **BOOKS to RESERVATIONS (1:N)**: A book can be placed on hold through multiple reservations.
+- **BOOKS to AUTHORS (M:N via BOOK_AUTHORS)**: A book can be written by multiple authors, and an author can write multiple books.
+- **BOOKS to CATEGORIES (M:N via BOOK_CATEGORIES)**: A book can belong to multiple categories/genres, and a category contains multiple books.
 
 ### Constraints
 
