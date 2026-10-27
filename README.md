@@ -150,7 +150,7 @@ erDiagram
 ### Constraints
 
 - **Primary keys**: users, loans and reservations use UUIDs; all other tables use auto-generated integer identity columns. Junction tables use composite keys.
-- **Foreign keys**: `ON DELETE CASCADE` or `RESTRICT` depending on business rules
+- **Foreign keys**: `ON DELETE SET NULL` or `RESTRICT` depending on business rules
 - **Unique**: `users.email`, `books.isbn`, `categories.name`
 - **Checks**:
   - `loans.due_date >= loans.borrow_date`
