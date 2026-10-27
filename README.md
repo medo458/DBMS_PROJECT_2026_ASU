@@ -89,6 +89,7 @@ erDiagram
     LOANS {
         UUID id PK
         UUID user_id FK
+        enum type
         int copy_id FK
         date borrow_date
         date due_date
