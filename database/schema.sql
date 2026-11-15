@@ -6,11 +6,11 @@ CREATE TYPE loan_type AS ENUM ('subscription', 'borrowing');
 
 CREATE TABLE publisher (
     id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    name VARCHAR(50) NOT NULL,
-    building_no INT,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    building_no VARCHAR(20),
     street_name VARCHAR(255),
     province VARCHAR(50),
-    postal_code INT,
+    postal_code VARCHAR(20),
     country VARCHAR(50)
 );
 
@@ -22,9 +22,9 @@ CREATE TABLE users (
     subscription_end DATE,
     date_of_birth DATE,
     email VARCHAR(100) NOT NULL UNIQUE,
-    password_hash VARCHAR(70) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
     role user_role NOT NULL DEFAULT 'member',
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT chk_users_subscription CHECK (
         (subscription_start IS NULL AND subscription_end IS NULL) OR
         (subscription_start IS NOT NULL AND subscription_end IS NOT NULL AND subscription_end >= subscription_start)
@@ -49,11 +49,16 @@ CREATE TABLE books (
     isbn VARCHAR(20) NOT NULL UNIQUE,
     title VARCHAR(255) NOT NULL,
     description TEXT,
-    publisher_id INT NOT NULL,
+    publisher_id INT,
     publication_year INT,
     pages INT,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_books_publisher FOREIGN KEY (publisher_id) REFERENCES publisher(id) ON DELETE RESTRICT
+    total_copies INT NOT NULL DEFAULT 0,
+    available_copies INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_books_publisher FOREIGN KEY (publisher_id) REFERENCES publisher(id) ON DELETE SET NULL,
+    CONSTRAINT chk_books_pages CHECK (pages IS NULL OR pages > 0),
+    CONSTRAINT chk_books_year CHECK (publication_year IS NULL OR publication_year BETWEEN 1000 AND 2100),
+    CONSTRAINT chk_books_copies CHECK (total_copies >= 0 AND available_copies >= 0 AND available_copies <= total_copies)
 );
 
 CREATE TABLE copies (
@@ -63,23 +68,24 @@ CREATE TABLE copies (
     rental_price NUMERIC(8,2) NOT NULL DEFAULT 0,
     taxes NUMERIC(8,2) NOT NULL DEFAULT 0,
     status copy_status NOT NULL DEFAULT 'available',
-    CONSTRAINT fk_copies_book FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE SET NULL
+    CONSTRAINT fk_copies_book FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
+    CONSTRAINT chk_copies_prices CHECK (rental_price >= 0 AND taxes >= 0)
 );
 
 CREATE TABLE book_authors (
     book_id INT NOT NULL,
     author_id INT NOT NULL,
     PRIMARY KEY (book_id, author_id),
-    CONSTRAINT fk_ba_book FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE SET NULL,
-    CONSTRAINT fk_ba_author FOREIGN KEY (author_id) REFERENCES authors(id) ON DELETE SET NULL
+    CONSTRAINT fk_ba_book FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
+    CONSTRAINT fk_ba_author FOREIGN KEY (author_id) REFERENCES authors(id) ON DELETE CASCADE
 );
 
 CREATE TABLE book_categories (
     book_id INT NOT NULL,
     category_id INT NOT NULL,
     PRIMARY KEY (book_id, category_id),
-    CONSTRAINT fk_bc_book FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE SET NULL,
-    CONSTRAINT fk_bc_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+    CONSTRAINT fk_bc_book FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
+    CONSTRAINT fk_bc_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
 );
 
 CREATE TABLE loans (
@@ -94,12 +100,13 @@ CREATE TABLE loans (
     rental_price NUMERIC(8,2) NOT NULL DEFAULT 0.00,
     subscription_price NUMERIC(8,2) NOT NULL DEFAULT 0.00,
     status loan_status NOT NULL DEFAULT 'borrowed',
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_loans_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
     CONSTRAINT fk_loans_copy FOREIGN KEY (copy_id) REFERENCES copies(id) ON DELETE RESTRICT,
     CONSTRAINT chk_loans_dates CHECK (due_date >= borrow_date),
     CONSTRAINT chk_loans_return_date CHECK (return_date IS NULL OR return_date >= borrow_date),
-    CONSTRAINT chk_loans_prices CHECK (fine_amount >= 0 AND rental_price >= 0 AND subscription_price >= 0)
+    CONSTRAINT chk_loans_prices CHECK (fine_amount >= 0 AND rental_price >= 0 AND subscription_price >= 0),
+    CONSTRAINT chk_loans_status_return CHECK ((status = 'returned') = (return_date IS NOT NULL))
 );
 
 CREATE TABLE reservations (
@@ -108,7 +115,31 @@ CREATE TABLE reservations (
     book_id INT NOT NULL,
     reserved_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     status reservation_status NOT NULL DEFAULT 'active',
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_reservations_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
-    CONSTRAINT fk_reservations_book FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE SET NULL
+    CONSTRAINT fk_reservations_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_reservations_book FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE
 );
+
+CREATE OR REPLACE FUNCTION sync_book_copy_counts() RETURNS TRIGGER AS $$
+DECLARE
+    affected_book_id INT;
+BEGIN
+    FOR affected_book_id IN
+        SELECT DISTINCT b FROM (
+            VALUES (CASE WHEN TG_OP IN ('UPDATE', 'DELETE') THEN OLD.book_id END),
+                   (CASE WHEN TG_OP IN ('INSERT', 'UPDATE') THEN NEW.book_id END)
+        ) AS t(b) WHERE b IS NOT NULL
+    LOOP
+        UPDATE books SET
+            total_copies = (SELECT COUNT(*) FROM copies
+                            WHERE book_id = affected_book_id AND status NOT IN ('lost', 'retired')),
+            available_copies = (SELECT COUNT(*) FROM copies
+                                WHERE book_id = affected_book_id AND status = 'available')
+        WHERE id = affected_book_id;
+    END LOOP;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_copies_sync_book_counts
+AFTER INSERT OR UPDATE OF book_id, status OR DELETE ON copies
+FOR EACH ROW EXECUTE FUNCTION sync_book_copy_counts();
