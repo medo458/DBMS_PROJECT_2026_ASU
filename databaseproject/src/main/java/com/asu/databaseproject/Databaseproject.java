@@ -3,7 +3,7 @@
  */
 
 package com.asu.databaseproject;
-
+import com.asu.databaseproject.seed.DataSeeder;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import org.flywaydb.core.Flyway;
@@ -30,11 +30,13 @@ public class Databaseproject {
                 .load();
         MigrateResult result = flyway.migrate();
         System.out.println("Flyway: applied " + result.migrationsExecuted
-                + " migration(s), schema now at version " + result.targetSchemaVersion);
+                + " migration(s), schema now at version " + flyway.info().current().getVersion());
 
         // 2. Start Hibernate; with action=validate it fails fast if the entities don't match the schema
         try (EntityManagerFactory emf = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT)) {
             System.out.println("Hibernate: schema validation passed");
+            DataSeeder.seed(emf);
         }
+
     }
 }
