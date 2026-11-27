@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="3.2" xmlns="https://jakarta.ee/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_2.xsd">
+  <persistence-unit name="com.asu_databaseproject_jar_1.0-SNAPSHOTPU" transaction-type="RESOURCE_LOCAL">
+    <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+    <class>com.asu.databaseproject.entity.Author</class>
+    <class>com.asu.databaseproject.entity.Book</class>
+    <class>com.asu.databaseproject.entity.BookAuthor</class>
+    <class>com.asu.databaseproject.entity.BookCategory</class>
+    <class>com.asu.databaseproject.entity.Category</class>
+    <class>com.asu.databaseproject.entity.Copy</class>
+    <class>com.asu.databaseproject.entity.Loan</class>
+    <class>com.asu.databaseproject.entity.Publisher</class>
+    <class>com.asu.databaseproject.entity.Reservation</class>
+    <class>com.asu.databaseproject.entity.User</class>
+    <properties>
+      <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5433/library"/>
+      <property name="jakarta.persistence.jdbc.user" value="postgres"/>
+      <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+      <property name="jakarta.persistence.jdbc.password" value="admin123"/>
+      <property name="hibernate.cache.provider_class" value="org.hibernate.cache.NoCacheProvider"/>
+      <property name="jakarta.persistence.schema-generation.database.action" value="validate"/>
+    </properties>
+  </persistence-unit>
+</persistence>
